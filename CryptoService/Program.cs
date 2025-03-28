@@ -1,3 +1,5 @@
+using CryptoService.Entities;
+
 namespace CryptoService;
 
 public class Program
@@ -43,6 +45,21 @@ public class Program
             })
             .WithName("GetWeatherForecast");
 
+        app.MapGet("/cryptocurrencies", (CryptoContext context) =>
+        {
+            return context.Cryptocurrencies.ToArray();
+        });
+        
+        app.MapGet("/wallets", (CryptoContext context) =>
+        {
+            return context.Wallets.ToArray();
+        });
+        
+        app.MapGet("/users", (CryptoContext context) =>
+        {
+            return context.Users.ToArray();
+        });
+        
         app.Run();
     }
 }
