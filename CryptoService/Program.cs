@@ -63,11 +63,6 @@ public class Program
         {
             return context.Wallets.ToArray();
         });
-        
-        app.MapGet("/users", (CryptoContext context) =>
-        {
-            return context.Users.ToArray();
-        });
 
         app.MapControllers();
         app.Run();
