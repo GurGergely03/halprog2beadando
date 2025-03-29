@@ -15,12 +15,19 @@ public class Program
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
 
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
+
+        builder.Services.AddControllers();
+        
         builder.Services.AddDbContext<CryptoContext>(options => options.UseSqlServer("Server=localhost;Database=CryptoService;User=sa;Password=Mikulas0;TrustServerCertificate=true;"));
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
+            app.UseSwagger();
+            app.UseSwaggerUI();
             app.MapOpenApi();
         }
 
@@ -61,7 +68,8 @@ public class Program
         {
             return context.Users.ToArray();
         });
-        
+
+        app.MapControllers();
         app.Run();
     }
 }
