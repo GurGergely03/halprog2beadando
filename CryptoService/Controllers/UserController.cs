@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CryptoService.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/users")]
 [ApiController]
 [Produces(MediaTypeNames.Application.Json)]
 public class UserController : Controller
@@ -21,7 +21,7 @@ public class UserController : Controller
     
     
     // cruds required by the specification
-    [HttpPost]
+    [HttpPost("register")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(typeof(User), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
