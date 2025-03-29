@@ -21,6 +21,31 @@ public class UserController : Controller
     
     
     // cruds required by the specification
+    
+    [HttpGet("{id:int}")]
+    [ProducesResponseType(typeof(User), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<User>> GetUser([FromRoute]int id)
+    {
+        if (id <= 0) return BadRequest("ID must be positive integer.");
+
+        try
+        {
+            var user = await _context.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Id == id);
+            
+            return user == null ? NotFound() : Ok(user);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Unexpected exception getting user with id: {id}", id);
+            return Problem("An error occured while getting the specified user", statusCode: 500);
+        }
+    }
+
     [HttpPost("register")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(typeof(User), StatusCodes.Status201Created)]
@@ -48,31 +73,7 @@ public class UserController : Controller
             return Problem("An error occured while creating the user.", statusCode: 500);
         }
     }
-
-    [HttpGet("{id:int}")]
-    [ProducesResponseType(typeof(User), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<User>> GetUser([FromRoute]int id)
-    {
-        if (id <= 0) return BadRequest("ID must be positive integer.");
-
-        try
-        {
-            var user = await _context.Users
-                .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.Id == id);
-            
-            return user == null ? NotFound() : Ok(user);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Unexpected exception getting user with id: {id}", id);
-            return Problem("An error occured while getting the specified user", statusCode: 500);
-        }
-    }
-
+    
     [HttpPut("{id:int}")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
