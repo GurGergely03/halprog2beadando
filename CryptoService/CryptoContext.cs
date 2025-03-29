@@ -11,4 +11,8 @@ public class CryptoContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<Wallet> Wallets { get; set; }
     public DbSet<Cryptocurrency> Cryptocurrencies { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+    }
 }
