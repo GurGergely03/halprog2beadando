@@ -1,4 +1,5 @@
 using System.Net.Mime;
+using CryptoService.DTOs;
 using CryptoService.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,11 +24,11 @@ public class UserController : Controller
     // cruds required by the specification
     
     [HttpGet("{id:int}")]
-    [ProducesResponseType(typeof(User), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<User>> GetUser([FromRoute]int id)
+    public async Task<ActionResult<UserDto>> GetUser([FromRoute]int id)
     {
         if (id <= 0) return BadRequest("ID must be positive integer.");
 
@@ -37,7 +38,13 @@ public class UserController : Controller
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Id == id);
             
-            return user == null ? NotFound() : Ok(user);
+            UserDto userDto = new UserDto();
+            userDto.Id = user.Id;
+            userDto.Name = user.Name;
+            userDto.Email = user.Email;
+            userDto.Balance = user.Balance;
+            
+            return userDto;
         }
         catch (Exception e)
         {
