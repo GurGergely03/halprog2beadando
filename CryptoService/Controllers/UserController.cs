@@ -42,7 +42,6 @@ public class UserController : Controller
             userDto.Id = user.Id;
             userDto.Name = user.Name;
             userDto.Email = user.Email;
-            userDto.Balance = user.Balance;
             
             return userDto;
         }
