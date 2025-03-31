@@ -7,4 +7,5 @@ public class Wallet
     public float Balance { get; set; }
     public int UserId { get; set; }
     public User User { get; set; }
+    public float TotalWalletValue { get; set; } = 0;
 }
