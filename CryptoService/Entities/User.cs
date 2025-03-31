@@ -21,7 +21,11 @@ public class User
     [Required]
     public string Password { get; set; }
     
-    public float Balance { get; set; }
-    
-    public List<Wallet> Wallets { get; set; } = new List<Wallet>();
+    public Wallet Wallet { get; set; }
+    public Role Role { get; set; }
+}
+public enum Role
+{
+    Admin,
+    User
 }
