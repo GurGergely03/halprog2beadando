@@ -1,3 +1,4 @@
+using System.Reflection;
 using CryptoService.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,6 +20,8 @@ public class Program
         builder.Services.AddSwaggerGen();
 
         builder.Services.AddControllers();
+        
+        builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
         
         builder.Services.AddDbContext<CryptoContext>(options => options.UseSqlServer("Server=localhost;Database=CryptoService;User=sa;Password=Mikulas0;TrustServerCertificate=true;"));
         var app = builder.Build();
