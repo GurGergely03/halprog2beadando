@@ -22,11 +22,5 @@ public sealed class User
     public string Password { get; set; }
 
     public Wallet Wallet { get; set; }
-    public Role Role { get; set; } = Role.User;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-}
-public enum Role
-{
-    Admin,
-    User
 }
