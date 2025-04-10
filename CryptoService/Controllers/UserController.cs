@@ -38,12 +38,6 @@ public class UserController : Controller
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Id == id);
             
-            UserDto userDto = new UserDto();
-            userDto.Id = user.Id;
-            userDto.Name = user.Name;
-            userDto.Email = user.Email;
-            
-            return userDto;
         }
         catch (Exception e)
         {
