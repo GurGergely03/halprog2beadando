@@ -1,4 +1,6 @@
+using System.Data.Common;
 using System.Net.Mime;
+using AutoMapper;
 using CryptoService.DTOs;
 using CryptoService.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -13,22 +15,23 @@ public class UserController : Controller
 {
     private readonly CryptoContext _context;
     private readonly ILogger<UserController> _logger;
+    private readonly IMapper _mapper;
 
-    public UserController(CryptoContext context, ILogger<UserController> logger)
+    public UserController(CryptoContext context, ILogger<UserController> logger, IMapper mapper)
     {
         _context = context;
         _logger = logger;
+        _mapper = mapper;
     }
     
     
-    // cruds required by the specification
-    
+    // Get By ID endpoint    
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<UserDto>> GetUser([FromRoute]int id)
+    public async Task<ActionResult<UserGetByIdDTO>> GetUser([FromRoute]int id)
     {
         if (id <= 0) return BadRequest("ID must be positive integer.");
 
@@ -37,12 +40,18 @@ public class UserController : Controller
             var user = await _context.Users
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Id == id);
-            
+
+            return Ok(_mapper.Map<UserGetByIdDTO>());
+        }
+        catch (DbException db)
+        {
+            _logger.LogError(db, "Unexpected error in the database while getting user with ID: {id}", id);
+            return Problem("An error occured in the database while getting a user by ID.", statusCode: 500);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Unexpected exception getting user with id: {id}", id);
-            return Problem("An error occured while getting the specified user", statusCode: 500);
+            _logger.LogError(e, "Unexpected error while getting user with ID: {id}", id);
+            return Problem("An error occured while getting a user by ID.", statusCode: 500);
         }
     }
 
@@ -64,8 +73,8 @@ public class UserController : Controller
         }
         catch (DbUpdateException e)
         {
-            _logger.LogError(e, "Database error creating user.");
-            return Problem("Failed to create user due to a database error.", statusCode: 500);
+            _logger.LogError(e, "Unexpected error in the database while adding user.");
+            return Problem("An error occured in the database while creating a user.", statusCode: 500);
         }
         catch (Exception e)
         {
