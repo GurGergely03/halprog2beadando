@@ -3,6 +3,7 @@ using System.Net.Mime;
 using AutoMapper;
 using CryptoService.DTOs;
 using CryptoService.Entities;
+using CryptoService.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,14 +15,37 @@ namespace CryptoService.Controllers;
 public class UserController : Controller
 {
     private readonly CryptoContext _context;
+    private UnitOfWork _unitOfWork;
     private readonly ILogger<UserController> _logger;
     private readonly IMapper _mapper;
 
-    public UserController(CryptoContext context, ILogger<UserController> logger, IMapper mapper)
+    public UserController(CryptoContext context, ILogger<UserController> logger, IMapper mapper, UnitOfWork unitOfWork)
     {
         _context = context;
         _logger = logger;
         _mapper = mapper;
+        _unitOfWork = unitOfWork;
+    }
+    
+    // Get all endpoint
+
+    [HttpGet("getall")]
+    [ProducesResponseType(typeof(List<UserGetDTO>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<List<UserGetDTO>>> GetAll()
+    {
+        try
+        {
+            var users = await _unitOfWork.UserRepository.GetAllAsync(includedProperties: ["Wallet"]);
+            return _mapper.Map<List<UserGetDTO>>(users);        
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Unexpected error in the database while getting users.");
+            return Problem("An error occured while getting users.", statusCode: 500);
+        }
     }
     
     
@@ -37,12 +61,9 @@ public class UserController : Controller
 
         try
         {
-            var user = await _context.Users
-                .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.Id == id);
-
-            return Ok();
-            //return Ok(_mapper.Map<UserGetByIdDTO>);
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(id);
+            
+            return Ok(_mapper.Map<UserGetByIdDTO>(user));
         }
         catch (DbException db)
         {
@@ -67,8 +88,8 @@ public class UserController : Controller
 
         try
         {
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            await _unitOfWork.UserRepository.InsertAsync(user);
+            await _unitOfWork.SaveAsync();
 
             return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
         }
@@ -90,20 +111,25 @@ public class UserController : Controller
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> PutUser([FromRoute] int id, [FromBody] User user)
+    public async Task<ActionResult> PutUser([FromRoute] int id, [FromBody] UserUpdateDTO user)
     {
         // parameter checks
         if (id <= 0) return BadRequest("ID must be positive integer.");
-        if (id != user.Id) return BadRequest("ID mismatch");
         if (!ModelState.IsValid) return BadRequest(ModelState);
         try
         {
-            var existingUser = await _context.Users.FindAsync(id);
-            if (existingUser == null) return NotFound();
-
-            _context.Entry(existingUser).CurrentValues.SetValues(user);
-
-            await _context.SaveChangesAsync();
+            User? existingUser = await _unitOfWork.UserRepository.GetByIdAsync(id);
+            if (existingUser == null) { return NotFound(); }
+            _mapper.Map(user, existingUser);
+            try
+            {
+                await _unitOfWork.SaveAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                _logger.LogError(e, "Unexpected error in the database while updating a user.");
+                return Problem("An error occured while updating the user.", statusCode: 500);
+            }
             return NoContent();
         }
         catch (DbUpdateException e)
@@ -128,11 +154,8 @@ public class UserController : Controller
         if (id <= 0) return BadRequest("ID must be a positive integer.");
         try
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null) return NotFound();
-            
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
+            await _unitOfWork.UserRepository.DeleteByIdAsync(id);
+            await _unitOfWork.SaveAsync();
             
             return NoContent();
         }

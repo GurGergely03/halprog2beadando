@@ -20,7 +20,6 @@ public sealed class User
     [MinLength(5)]
     [Required]
     public string Password { get; set; }
-
-    public Wallet Wallet { get; set; }
+    public Wallet Wallet { get; set; } = new Wallet();
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
