@@ -27,7 +27,7 @@ public class UserController : Controller
     
     // Get By ID endpoint    
     [HttpGet("{id:int}")]
-    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(UserGetByIdDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -41,7 +41,8 @@ public class UserController : Controller
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Id == id);
 
-            return Ok(_mapper.Map<UserGetByIdDTO>());
+            return Ok();
+            //return Ok(_mapper.Map<UserGetByIdDTO>);
         }
         catch (DbException db)
         {
