@@ -14,21 +14,18 @@ namespace CryptoService.Controllers;
 [Produces(MediaTypeNames.Application.Json)]
 public class UserController : Controller
 {
-    private readonly CryptoContext _context;
     private UnitOfWork _unitOfWork;
     private readonly ILogger<UserController> _logger;
     private readonly IMapper _mapper;
 
-    public UserController(CryptoContext context, ILogger<UserController> logger, IMapper mapper, UnitOfWork unitOfWork)
+    public UserController(ILogger<UserController> logger, IMapper mapper, UnitOfWork unitOfWork)
     {
-        _context = context;
         _logger = logger;
         _mapper = mapper;
         _unitOfWork = unitOfWork;
     }
     
     // Get all endpoint
-
     [HttpGet("getall")]
     [ProducesResponseType(typeof(List<UserGetDTO>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -77,21 +74,22 @@ public class UserController : Controller
         }
     }
 
+    // Post Register endpoint
     [HttpPost("register")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(typeof(User), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> CreateUser([FromBody] User user)
+    public async Task<ActionResult> CreateUser([FromBody] UserCreateDTO user)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
         try
         {
-            await _unitOfWork.UserRepository.InsertAsync(user);
+            await _unitOfWork.UserRepository.InsertAsync(_mapper.Map<User>(user));
             await _unitOfWork.SaveAsync();
 
-            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+            return Created();
         }
         catch (DbUpdateException e)
         {
@@ -105,6 +103,7 @@ public class UserController : Controller
         }
     }
     
+    // Put Update endpoint
     [HttpPut("{id:int}")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -144,6 +143,7 @@ public class UserController : Controller
         }
     }
 
+    // Delete By Id endpoint
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

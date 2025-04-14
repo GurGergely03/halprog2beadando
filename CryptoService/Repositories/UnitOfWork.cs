@@ -9,11 +9,11 @@ public class UnitOfWork
     public UnitOfWork(CryptoContext context)
     {
         _context = context;
-        UserRepository = new GenericRepository<User>(_context);
-        CryptocurrencyRepository = new GenericRepository<Cryptocurrency>(_context);
-        WalletRepository = new GenericRepository<Wallet>(_context);
-        TransactionHistoryRepository = new GenericRepository<TransactionHistory>(_context);
-        CryptocurrencyHistoryRepository = new GenericRepository<CryptocurrencyHistory>(_context);
+        UserRepository = new GenericRepository<User>(context);
+        CryptocurrencyRepository = new GenericRepository<Cryptocurrency>(context);
+        WalletRepository = new GenericRepository<Wallet>(context);
+        TransactionHistoryRepository = new GenericRepository<TransactionHistory>(context);
+        CryptocurrencyHistoryRepository = new GenericRepository<CryptocurrencyHistory>(context);
     }
     
     public GenericRepository<User> UserRepository { get; set; }

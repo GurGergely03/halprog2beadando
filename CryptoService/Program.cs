@@ -1,5 +1,6 @@
 using System.Reflection;
 using CryptoService.Entities;
+using CryptoService.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace CryptoService;
@@ -20,6 +21,8 @@ public class Program
         builder.Services.AddSwaggerGen();
 
         builder.Services.AddControllers();
+        
+        builder.Services.AddScoped<UnitOfWork>();
         
         builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
         
