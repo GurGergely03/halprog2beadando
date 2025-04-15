@@ -10,8 +10,10 @@ public class Cryptocurrency
     public string ShortName { get; set; }
     [Required]
     public float StartingPrice { get; set; }
+
     public float CurrentPrice { get; set; }
     [Required]
     public int TotalAmount { get; set; }
     public int AvailableAmount { get; set; }
+    public List<CryptocurrencyHistory> CryptocurrencyHistory { get; set; } = new List<CryptocurrencyHistory>();
 }
