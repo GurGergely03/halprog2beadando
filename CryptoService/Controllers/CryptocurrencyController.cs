@@ -3,6 +3,7 @@ using System.Net.Mime;
 using AutoMapper;
 using CryptoService.DTOs;
 using CryptoService.Entities;
+using CryptoService.Profiles;
 using CryptoService.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -120,13 +121,12 @@ public class CryptocurrencyController : Controller
         {
             Cryptocurrency? existingCryptocurrency = await _unitOfWork.CryptocurrencyRepository.GetByIdAsync(id);
             if (existingCryptocurrency == null) { return NotFound(); }
-            _mapper.Map(crypto, existingCryptocurrency);
-            
             if (crypto.CurrentPrice != null)
             {
-                // after manual price change, create a history instance and add it to the list of the updated cryptocurrency
-                // await _unitOfWork.CryptocurrencyHistoryRepository.InsertAsync(_mapper.Map<CryptocurrencyHistory>(crypto));
+                var sources = new CryptocurrencyHistoryProfile.CryptocurrencyHistorySources {Crypto = existingCryptocurrency, Update = crypto};
+                await _unitOfWork.CryptocurrencyHistoryRepository.InsertAsync(_mapper.Map<CryptocurrencyHistory>(sources));
             }
+            _mapper.Map(crypto, existingCryptocurrency);
             await _unitOfWork.SaveAsync();
         
             return NoContent();
@@ -134,7 +134,7 @@ public class CryptocurrencyController : Controller
         catch (DbUpdateException e)
         {
             _logger.LogError(e, "Database error updating crypto {id}.", id);
-            return Problem("Database error while updating crypto.", statusCode: 500);
+            return Problem($"Database error while updating crypto. {e.Message}\n{e.InnerException.Message}", statusCode: 500);
         }
         catch (Exception e)
         {

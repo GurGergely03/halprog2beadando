@@ -15,7 +15,9 @@ public class CryptocurrencyProfile : Profile
         CreateMap<Cryptocurrency, CryptocurrencyGetByIdDTO>();
         
         // create
-        CreateMap<CryptocurrencyCreateDTO, Cryptocurrency>();
+        CreateMap<CryptocurrencyCreateDTO, Cryptocurrency>()
+            .ForMember(dest => dest.CurrentPrice, opt => opt.MapFrom(src => src.StartingPrice))
+            .ForMember(dest => dest.AvailableAmount, opt => opt.MapFrom(src => src.TotalAmount));
         
         // update
         CreateMap<CryptocurrencyUpdateDTO, Cryptocurrency>()
