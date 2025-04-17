@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 namespace CryptoService.Controllers;
 
 
-[Route("api/cryptos")]
+[Route("api")]
 [ApiController]
 [Produces(MediaTypeNames.Application.Json)]
 public class CryptocurrencyController : Controller
@@ -28,7 +28,7 @@ public class CryptocurrencyController : Controller
     }
     
     // Get all endpoint
-    [HttpGet("getall")]
+    [HttpGet("cryptos")]
     [ProducesResponseType(typeof(List<CryptocurrencyGetDTO>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -49,7 +49,7 @@ public class CryptocurrencyController : Controller
     
     
     // Get By ID endpoint    
-    [HttpGet("{id:int}")]
+    [HttpGet("cryptos/{id:int}")]
     [ProducesResponseType(typeof(CryptocurrencyGetByIdDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -77,7 +77,7 @@ public class CryptocurrencyController : Controller
     }
 
     // Post create crypto endpoint
-    [HttpPost("create")]
+    [HttpPost("cryptos")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(typeof(Cryptocurrency), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -106,7 +106,7 @@ public class CryptocurrencyController : Controller
     }
     
     // Put Update endpoint
-    [HttpPut("{id:int}")]
+    [HttpPut("crypto/price/{id:int}")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -144,7 +144,7 @@ public class CryptocurrencyController : Controller
     }
 
     // Delete By Id endpoint
-    [HttpDelete("{id:int}")]
+    [HttpDelete("cryptos/{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

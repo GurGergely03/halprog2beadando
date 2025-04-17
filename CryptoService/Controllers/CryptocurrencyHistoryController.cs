@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CryptoService.Controllers;
 
-[Route("api/cryptohistory")]
+[Route("api/crypto")]
 [ApiController]
 [Produces(MediaTypeNames.Application.Json)]
 public class CryptocurrencyHistoryController : Controller
@@ -26,7 +26,7 @@ public class CryptocurrencyHistoryController : Controller
     }
     
     // Get By crypto ID endpoint    
-    [HttpGet("{id:int}")]
+    [HttpGet("price/history/{id:int}")]
     [ProducesResponseType(typeof(CryptocurrencyHistoryGetByCryptoIdDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

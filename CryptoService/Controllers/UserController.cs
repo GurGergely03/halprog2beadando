@@ -25,6 +25,7 @@ public class UserController : Controller
         _unitOfWork = unitOfWork;
     }
     
+    // not needed
     // Get all endpoint
     [HttpGet("getall")]
     [ProducesResponseType(typeof(List<UserGetDTO>), StatusCodes.Status200OK)]
