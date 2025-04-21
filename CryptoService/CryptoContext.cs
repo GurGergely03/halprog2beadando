@@ -22,13 +22,18 @@ public class CryptoContext : DbContext
         modelBuilder.Entity<User>()
             .HasOne(u => u.Wallet)
             .WithOne(w => w.User)
-            .HasForeignKey<Wallet>(w => w.Id)
+            .HasForeignKey<User>(u => u.WalletId)
             .OnDelete(DeleteBehavior.Cascade);
         
         // User's WalletId field
         modelBuilder.Entity<User>()
             .HasIndex(u => u.WalletId)
             .IsUnique();
+        
+        modelBuilder.Entity<User>()
+            .Property(u => u.CreatedAt)
+            .HasDefaultValueSql("GETUTCDATE()")
+            .ValueGeneratedOnAdd();
         
         // Wallet -> TransactionHistory connection
         modelBuilder.Entity<Wallet>()

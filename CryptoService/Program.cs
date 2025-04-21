@@ -1,6 +1,7 @@
 using System.Reflection;
 using CryptoService.Entities;
 using CryptoService.Repositories;
+using CryptoService.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace CryptoService;
@@ -23,10 +24,18 @@ public class Program
         builder.Services.AddControllers();
         
         builder.Services.AddScoped<UnitOfWork>();
+
+        // services
+        builder.Services.AddScoped<IUserService, UserService>();
         
+        
+        // automapper
         builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
         
+        // dbcontext
         builder.Services.AddDbContext<CryptoContext>(options => options.UseSqlServer("Server=localhost;Database=CryptoService;User=sa;Password=Mikulas0;TrustServerCertificate=true;"));
+        
+        
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.

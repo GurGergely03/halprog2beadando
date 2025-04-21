@@ -13,6 +13,7 @@ public class UserProfile : Profile
         
         // get by id0
         CreateMap<User, UserGetByIdDTO>();
+        CreateMap<TransactionHistory, UserTransactionHistoryDTO>();
         
         // register
         CreateMap<UserCreateDTO, User>();

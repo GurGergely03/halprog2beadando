@@ -36,8 +36,6 @@ public sealed class User
     public int WalletId { get; set; }
     
     
-    [Required]
-    [InverseProperty(nameof(Wallet.User))]
     public Wallet Wallet { get; set; } = new Wallet();
     
     
