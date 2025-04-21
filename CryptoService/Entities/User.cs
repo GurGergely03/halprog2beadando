@@ -26,9 +26,12 @@ public sealed class User
     [Unicode(false)]
     public string Email { get; set; }
     
+    
     [Required]
     [StringLength(100, MinimumLength = 4, ErrorMessage = "Password must be between 4-100 characters")]
     public string Password { get; set; }
+    
+    
     [ForeignKey(nameof(Wallet))]
     public int WalletId { get; set; }
     

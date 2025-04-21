@@ -1,16 +1,11 @@
 namespace CryptoService.DTOs;
 
-public class TransacttionHistoryGetDTO
+public class TransactionHistoryGetByUserIdDTO
 {
     
 }
 
 public class TransactionHistoryGetByIdDTO
-{
-    
-}
-
-public class TransactionHistoryCreateDTO
 {
     
 }

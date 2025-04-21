@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
 namespace CryptoService.Entities;
-[Table("CryptocurrencyHistories")]
+[Table("CryptocurrencyHistories", Schema = "dbo")]
 [Index(nameof(ChangeAt))]
 public class CryptocurrencyHistory
 {
