@@ -61,29 +61,23 @@ public class UserController : Controller
         }
         catch (DbException db)
         {
-            _logger.LogError(db,
-                $"DatabaseException occured in the database while getting user with ID: {id}\nERROR MESSAGE: {db.Message}\nINNER MESSAGE: {db.InnerException?.Message}");
-            return Problem(
-                $"An error occured in the database while getting a user by ID: {id}.\nERROR MESSAGE: {db.Message}\nINNER MESSAGE: {db.InnerException?.Message}",
-                statusCode: 500);
+            _logger.LogError(db, $"DatabaseException occured while getting user with ID: {id}\nERROR MESSAGE: {db.Message}\nINNER MESSAGE: {db.InnerException?.Message}");
+            return Problem($"An error occured in the database while getting user by ID: {id}.\nERROR MESSAGE: {db.Message}\nINNER MESSAGE: {db.InnerException?.Message}", statusCode: 500);
         }
         catch (ArgumentOutOfRangeException aoorEx)
         {
-            _logger.LogError(aoorEx,
-                $"ArgumentOutOfRangeException occured while getting user with ID: {id}.\nERROR MESSAGE: {aoorEx.Message}\nINNER MESSAGE: {aoorEx.InnerException?.Message}");
-            return Problem(
-                $"An error occured while getting a user by ID: {id}.\nERROR MESSAGE: {aoorEx.Message}\nINNER MESSAGE: {aoorEx.InnerException?.Message}",
-                statusCode: 400);
+            _logger.LogError(aoorEx, $"ArgumentOutOfRangeException occured while getting user with ID: {id}.\nERROR MESSAGE: {aoorEx.Message}\nINNER MESSAGE: {aoorEx.InnerException?.Message}");
+            return Problem($"An error occured while getting user with ID: {id}.\nERROR MESSAGE: {aoorEx.Message}\nINNER MESSAGE: {aoorEx.InnerException?.Message}", statusCode: 400);
         }
         catch (KeyNotFoundException knfEx)
         {
             _logger.LogError(knfEx, $"KeyNotFoundException occured while getting user with ID: {id}.\nERROR MESSAGE: {knfEx.Message}\nINNER MESSAGE: {knfEx.InnerException?.Message}");
-            return Problem($"An error occured while getting a user with ID: {id}.\nERROR MESSAGE: {knfEx.Message}\nINNER MESSAGE: {knfEx.InnerException?.Message}", statusCode: 400);
+            return Problem($"An error occured while getting user with ID: {id}.\nERROR MESSAGE: {knfEx.Message}\nINNER MESSAGE: {knfEx.InnerException?.Message}", statusCode: 404);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, $"Unexpected general exception while getting user with ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}");
-            return Problem($"An error occured while getting a user by ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}", statusCode: 500);
+            _logger.LogError(e, $"Unexpected exception while getting user with ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}");
+            return Problem($"An error occured while getting user by ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}", statusCode: 500);
         }
     }
 
@@ -103,12 +97,12 @@ public class UserController : Controller
         catch (DbUpdateException e)
         {
             _logger.LogError(e, $"DatabaseUpdateException occured while adding user to the database.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}");
-            return Problem($"An error occured in the database while creating a user.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}", statusCode: 500);
+            return Problem($"An error occured in the database while creating user.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}", statusCode: 500);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, $"Unexpected general exception creating user.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}");
-            return Problem($"An error occured while creating the user.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}", statusCode: 500);
+            _logger.LogError(e, $"Unexpected exception creating user.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}");
+            return Problem($"An error occured while creating user.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}", statusCode: 500);
         }
     }
     
@@ -136,17 +130,17 @@ public class UserController : Controller
         catch (ArgumentOutOfRangeException aoorEx)
         {
             _logger.LogError(aoorEx, $"ArgumentOutOfRangeException occured while updating user with ID: {id}.\nERROR MESSAGE: {aoorEx.Message}\nINNER MESSAGE: {aoorEx.InnerException?.Message}");
-            return Problem($"An error occured while updating a user with ID: {id}.\nERROR MESSAGE: {aoorEx.Message}\nINNER MESSAGE: {aoorEx.InnerException?.Message}", statusCode: 400);
+            return Problem($"An error occured while updating user with ID: {id}.\nERROR MESSAGE: {aoorEx.Message}\nINNER MESSAGE: {aoorEx.InnerException?.Message}", statusCode: 400);
         }
         catch (KeyNotFoundException knfEx)
         {
             _logger.LogError(knfEx, $"KeyNotFoundException occured while updating user with ID: {id}.\nERROR MESSAGE: {knfEx.Message}\nINNER MESSAGE: {knfEx.InnerException?.Message}");
-            return Problem($"An error occured while updating a user with ID: {id}.\nERROR MESSAGE: {knfEx.Message}\nINNER MESSAGE: {knfEx.InnerException?.Message}", statusCode: 400);
+            return Problem($"An error occured while updating user with ID: {id}.\nERROR MESSAGE: {knfEx.Message}\nINNER MESSAGE: {knfEx.InnerException?.Message}", statusCode: 404);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, $"Unexpected general exception updating user with ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}");
-            return Problem($"An error occured while updating the user with ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}", statusCode: 500);
+            _logger.LogError(e, $"Unexpected exception updating user with ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}");
+            return Problem($"An error occured while updating user with ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}", statusCode: 500);
         }
     }
 
@@ -165,22 +159,22 @@ public class UserController : Controller
         }
         catch (DbUpdateException e)
         {
-            _logger.LogError(e, $"Database error deleting user with ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}");
+            _logger.LogError(e, $"DatabaseUpdateException occured while deleting user with ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}");
             return Problem($"Failed to delete user due to database error.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}", statusCode: 500);
         }
         catch (ArgumentOutOfRangeException aoorEx)
         {
             _logger.LogError(aoorEx, $"ArgumentOutOfRangeException occured while deleting user with ID: {id}.\nERROR MESSAGE: {aoorEx.Message}\nINNER MESSAGE: {aoorEx.InnerException?.Message}");
-            return Problem($"An error occured while deleting a user with ID: {id}.\nERROR MESSAGE: {aoorEx.Message}\nINNER MESSAGE: {aoorEx.InnerException?.Message}", statusCode: 400);
+            return Problem($"An error occured while deleting user with ID: {id}.\nERROR MESSAGE: {aoorEx.Message}\nINNER MESSAGE: {aoorEx.InnerException?.Message}", statusCode: 400);
         }
         catch (KeyNotFoundException knfEx)
         {
             _logger.LogError(knfEx, $"KeyNotFoundException occured while deleting user with ID: {id}.\nERROR MESSAGE: {knfEx.Message}\nINNER MESSAGE: {knfEx.InnerException?.Message}");
-            return Problem($"An error occured while deleting a user with ID: {id}.\nERROR MESSAGE: {knfEx.Message}\nINNER MESSAGE: {knfEx.InnerException?.Message}", statusCode: 400);
+            return Problem($"An error occured while deleting user with ID: {id}.\nERROR MESSAGE: {knfEx.Message}\nINNER MESSAGE: {knfEx.InnerException?.Message}", statusCode: 404);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, $"Unexpected exception deleting user with ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}");
+            _logger.LogError(e, $"Unexpected exception occured while deleting user with ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}");
             return Problem($"Unexpected exception deleting user with ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}", statusCode:500);
         }
     }

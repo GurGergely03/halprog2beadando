@@ -44,7 +44,7 @@ public class UserService(UnitOfWork unitOfWork, IMapper mapper) : IUserService
         var existingUser = await unitOfWork.UserRepository.GetByIdAsync(id);
         if (existingUser is null) throw new KeyNotFoundException();
         
-        mapper.Map(existingUser, mapper.Map<User>(user));
+        mapper.Map(existingUser, user);
         await unitOfWork.SaveAsync();
     }
 

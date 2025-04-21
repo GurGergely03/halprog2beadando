@@ -5,6 +5,7 @@ using CryptoService.DTOs;
 using CryptoService.Entities;
 using CryptoService.Profiles;
 using CryptoService.Repositories;
+using CryptoService.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,15 +17,15 @@ namespace CryptoService.Controllers;
 [Produces(MediaTypeNames.Application.Json)]
 public class CryptocurrencyController : Controller
 {
-    private UnitOfWork _unitOfWork;
+    private ICryptocurrencyService _cryptocurrencyService;
     private readonly ILogger<CryptocurrencyController> _logger;
     private readonly IMapper _mapper;
 
-    public CryptocurrencyController(ILogger<CryptocurrencyController> logger, IMapper mapper, UnitOfWork unitOfWork)
+    public CryptocurrencyController(ILogger<CryptocurrencyController> logger, IMapper mapper, ICryptocurrencyService cryptocurrencyService)
     {
         _logger = logger;
         _mapper = mapper;
-        _unitOfWork = unitOfWork;
+        _cryptocurrencyService = cryptocurrencyService;
     }
     
     // Get all endpoint
@@ -37,13 +38,12 @@ public class CryptocurrencyController : Controller
     {
         try
         {
-            var cryptos = await _unitOfWork.CryptocurrencyRepository.GetAllAsync();
-            return _mapper.Map<List<CryptocurrencyGetDTO>>(cryptos);        
+             return Ok(await _cryptocurrencyService.GetCryptocurrencies());
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Unexpected error in the database while getting cryptos.");
-            return Problem("An error occured while getting cryptos.", statusCode: 500);
+            _logger.LogError(e, $"Unexpected error in the database while getting cryptos.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}");
+            return Problem($"An error occured while getting cryptos.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}", statusCode: 500);
         }
     }
     
@@ -60,19 +60,27 @@ public class CryptocurrencyController : Controller
 
         try
         {
-            var crypto = await _unitOfWork.CryptocurrencyRepository.GetByIdAsync(id);
-            
-            return Ok(_mapper.Map<CryptocurrencyGetByIdDTO>(crypto));
+            return Ok(await _cryptocurrencyService.GetCryptocurrencyById(id));
+        }
+        catch (ArgumentOutOfRangeException aoorEx)
+        {
+            _logger.LogError(aoorEx, $"ArgumentOutOfRangeException occured while getting crypto with ID: {id}.\nERROR MESSAGE: {aoorEx.Message}\nINNER MESSAGE: {aoorEx.InnerException?.Message}");
+            return Problem($"An error occured while getting crypto with ID: {id}.\nERROR MESSAGE: {aoorEx.Message}\nINNER MESSAGE: {aoorEx.InnerException?.Message}", statusCode: 400);
+        }
+        catch (KeyNotFoundException knfEx)
+        {
+            _logger.LogError(knfEx, $"KeyNotFoundException occured while getting crypto with ID: {id}.\nERROR MESSAGE: {knfEx.Message}\nINNER MESSAGE: {knfEx.InnerException?.Message}");
+            return Problem($"An error occured while getting crypto with ID: {id}.\nERROR MESSAGE: {knfEx.Message}\nINNER MESSAGE: {knfEx.InnerException?.Message}", statusCode: 404);
         }
         catch (DbException db)
         {
-            _logger.LogError(db, "Unexpected error in the database while getting crypto with ID: {id}", id);
-            return Problem("An error occured in the database while getting a crypto by ID.", statusCode: 500);
+            _logger.LogError(db, $"DatabaseException occured while getting crypto with ID: {id}.\nERROR MESSAGE: {db.Message}\nINNER MESSAGE: {db.InnerException?.Message}");
+            return Problem($"An error occured in the database while getting crypto by ID: {id}.\nERROR MESSAGE: {db.Message}\nINNER MESSAGE: {db.InnerException?.Message}", statusCode: 500);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Unexpected error while getting crypto with ID: {id}", id);
-            return Problem("An error occured while getting a crypto by ID.", statusCode: 500);
+            _logger.LogError(e, $"Unexpected error while getting crypto with ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}");
+            return Problem($"An error occured while getting crypto with ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}", statusCode: 500);
         }
     }
 
@@ -84,24 +92,20 @@ public class CryptocurrencyController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> CreateCryptocurrency([FromBody] CryptocurrencyCreateDTO crypto)
     {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
-
         try
         {
-            await _unitOfWork.CryptocurrencyRepository.InsertAsync(_mapper.Map<Cryptocurrency>(crypto));
-            await _unitOfWork.SaveAsync();
-
+            await _cryptocurrencyService.AddCryptoAsync(crypto);
             return Created();
         }
         catch (DbUpdateException e)
         {
-            _logger.LogError(e, "Unexpected error in the database while adding crypto.");
-            return Problem("An error occured in the database while creating a crypto.", statusCode: 500);
+            _logger.LogError(e, $"DatabaseUpdateException occured while adding crypto.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}");
+            return Problem($"An error occured in the database while creating a crypto.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}", statusCode: 500);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Unexpected exception creating crypto.");
-            return Problem("An error occured while creating the crypto.", statusCode: 500);
+            _logger.LogError(e, $"Unexpected exception creating crypto.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}");
+            return Problem($"An error occured while creating the crypto.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}", statusCode: 500);
         }
     }
     
@@ -114,32 +118,31 @@ public class CryptocurrencyController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> PutCryptocurrency([FromRoute] int id, [FromBody] CryptocurrencyUpdateDTO crypto)
     {
-        // parameter checks
-        if (id <= 0) return BadRequest("ID must be positive integer.");
-        if (!ModelState.IsValid) return BadRequest(ModelState);
         try
         {
-            Cryptocurrency? existingCryptocurrency = await _unitOfWork.CryptocurrencyRepository.GetByIdAsync(id);
-            if (existingCryptocurrency == null) { return NotFound(); }
-            if (crypto.CurrentPrice != null)
-            {
-                var sources = new CryptocurrencyHistoryProfile.CryptocurrencyHistorySources {Crypto = existingCryptocurrency, Update = crypto};
-                await _unitOfWork.CryptocurrencyHistoryRepository.InsertAsync(_mapper.Map<CryptocurrencyHistory>(sources));
-            }
-            _mapper.Map(crypto, existingCryptocurrency);
-            await _unitOfWork.SaveAsync();
-        
+            await _cryptocurrencyService.UpdateCryptoAsync(id, crypto);
+
             return NoContent();
+        }
+        catch (ArgumentOutOfRangeException aoorEx)
+        {
+            _logger.LogError(aoorEx, $"ArgumentOutOfRangeException occured while updating crypto with ID: {id}.\nERROR MESSAGE: {aoorEx.Message}\nINNER MESSAGE: {aoorEx.InnerException?.Message}");
+            return Problem($"An error occured while updating crypto with ID: {id}.\nERROR MESSAGE: {aoorEx.Message}\nINNER MESSAGE: {aoorEx.InnerException?.Message}", statusCode: 400);
+        }
+        catch (KeyNotFoundException knfEx)
+        {
+            _logger.LogError(knfEx, $"KeyNotFoundException occured while updating crypto with ID: {id}.\nERROR MESSAGE: {knfEx.Message}\nINNER MESSAGE: {knfEx.InnerException?.Message}");
+            return Problem($"An error occured while updating crypto with ID: {id}.\nERROR MESSAGE: {knfEx.Message}\nINNER MESSAGE: {knfEx.InnerException?.Message}", statusCode: 404);
         }
         catch (DbUpdateException e)
         {
-            _logger.LogError(e, "Database error updating crypto {id}.", id);
-            return Problem($"Database error while updating crypto. {e.Message}\n{e.InnerException.Message}", statusCode: 500);
+            _logger.LogError(e, $"DatabaseUpdateException occured while updating crypto with ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}");
+            return Problem($"Database error while updating crypto with ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}", statusCode: 500);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Unexpected exception updating crypto {id}.", id);
-            return Problem("An error occured while updating the crypto.", statusCode: 500);
+            _logger.LogError(e, $"Unexpected exception updating crypto with ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}");
+            return Problem($"An error occured while updating crypto with ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}", statusCode: 500);
         }
     }
 
@@ -151,23 +154,31 @@ public class CryptocurrencyController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> DeleteCryptocurrency([FromRoute] int id)
     {
-        if (id <= 0) return BadRequest("ID must be a positive integer.");
         try
         {
-            await _unitOfWork.CryptocurrencyRepository.DeleteByIdAsync(id);
-            await _unitOfWork.SaveAsync();
-            
+            await _cryptocurrencyService.DeleteCryptoAsync(id);
+
             return NoContent();
+        }
+        catch (ArgumentOutOfRangeException aoorEx)
+        {
+            _logger.LogError(aoorEx, $"ArgumentOutOfRangeException occured while deleting crypto with ID: {id}.\nERROR MESSAGE: {aoorEx.Message}\nINNER MESSAGE: {aoorEx.InnerException?.Message}");
+            return Problem($"An error occured while deleting crypto with ID: {id}.\nERROR MESSAGE: {aoorEx.Message}\nINNER MESSAGE: {aoorEx.InnerException?.Message}", statusCode: 400);
+        }
+        catch (KeyNotFoundException knfEx)
+        {
+            _logger.LogError(knfEx, $"KeyNotFoundException occured while deleting crypto with ID: {id}.\nERROR MESSAGE: {knfEx.Message}\nINNER MESSAGE: {knfEx.InnerException?.Message}");
+            return Problem($"An error occured while deleting crypto with ID: {id}.\nERROR MESSAGE: {knfEx.Message}\nINNER MESSAGE: {knfEx.InnerException?.Message}", statusCode: 404);
         }
         catch (DbUpdateException e)
         {
-            _logger.LogError(e, "Database error deleting crypto {id}.", id);
-            return Problem("Failed to delete crypto due to database error.", statusCode: 500);
+            _logger.LogError(e, $"DatabaseUpdateException occured while deleting crypto with ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}");
+            return Problem($"An error occured while deleting crypto with ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER MESSAGE: {e.InnerException?.Message}", statusCode: 500);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Unexpected exception deleting crypto {id}", id);
-            return Problem("Unexpected exception deleting crypto.", statusCode:500);
+            _logger.LogError(e, $"Unexpected exception deleting crypto with ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER EXCEPTION: {e.InnerException?.Message}");
+            return Problem($"Unexpected exception deleting crypto with ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER EXCEPTION: {e.InnerException?.Message}", statusCode:500);
         }
     }
 }

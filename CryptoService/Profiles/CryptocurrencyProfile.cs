@@ -13,6 +13,7 @@ public class CryptocurrencyProfile : Profile
         
         // get by id
         CreateMap<Cryptocurrency, CryptocurrencyGetByIdDTO>();
+        CreateMap<CryptocurrencyHistory, CryptocurrencyHistoryListDTO>();
         
         // create
         CreateMap<CryptocurrencyCreateDTO, Cryptocurrency>()

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
 namespace CryptoService.Entities;
-[Table("Users")]
+[Table("Users", Schema = "dbo")]
 [Index(nameof(Email), IsUnique = true, Name = "IX_Users_Email")]
 public sealed class User
 {

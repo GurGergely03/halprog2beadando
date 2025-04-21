@@ -27,6 +27,7 @@ public class Program
 
         // services
         builder.Services.AddScoped<IUserService, UserService>();
+        builder.Services.AddScoped<ICryptocurrencyService, CryptocurrencyService>();
         
         
         // automapper
