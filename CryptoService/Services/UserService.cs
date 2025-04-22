@@ -40,11 +40,10 @@ public class UserService(UnitOfWork unitOfWork, IMapper mapper) : IUserService
     public async Task UpdateUserAsync(int id, UserUpdateDTO user)
     { 
         if (id <= 0) throw new ArgumentOutOfRangeException();
-        
         var existingUser = await unitOfWork.UserRepository.GetByIdAsync(id);
         if (existingUser is null) throw new KeyNotFoundException();
         
-        mapper.Map(existingUser, user);
+        mapper.Map(user, existingUser);
         await unitOfWork.SaveAsync();
     }
 

@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CryptoService.Entities;
 
+[Table("Wallets", Schema = "dbo")]
 public class Wallet
 {
     [Key]

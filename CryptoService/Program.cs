@@ -1,4 +1,5 @@
 using System.Reflection;
+using CryptoService.DTOs;
 using CryptoService.Entities;
 using CryptoService.Repositories;
 using CryptoService.Services;
@@ -27,6 +28,7 @@ public class Program
 
         // services
         builder.Services.AddScoped<IUserService, UserService>();
+        builder.Services.AddScoped<IWalletService, WalletService>();
         builder.Services.AddScoped<ICryptocurrencyService, CryptocurrencyService>();
         
         

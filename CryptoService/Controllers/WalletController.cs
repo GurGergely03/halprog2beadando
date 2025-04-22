@@ -4,6 +4,7 @@ using AutoMapper;
 using CryptoService.DTOs;
 using CryptoService.Entities;
 using CryptoService.Repositories;
+using CryptoService.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,17 +12,11 @@ namespace CryptoService.Controllers;
 
 [ApiController]
 [Route("wallet")]
-public class WalletController : Controller
+public class WalletController(ILogger<WalletController> logger, IMapper mapper, IWalletService walletService)
+    : Controller
 {
-    private readonly ILogger<WalletController> _logger;
-    private UnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
-    public WalletController(ILogger<WalletController> logger, UnitOfWork unitOfWork, IMapper mapper) 
-    {
-        _logger = logger;
-        _unitOfWork = unitOfWork;
-        _mapper = mapper;
-    }
+    private IWalletService _walletService = walletService;
+
     // Get By ID endpoint    
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(WalletGetByIdDTO), StatusCodes.Status200OK)]
@@ -30,23 +25,30 @@ public class WalletController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<WalletGetByIdDTO>> GetWallet([FromRoute]int id)
     {
-        if (id <= 0) return BadRequest("ID must be positive integer.");
-
         try
         {
-            var wallet = await _unitOfWork.WalletRepository.GetByIdAsync(id);
-            
-            return Ok(_mapper.Map<WalletGetByIdDTO>(wallet));
+            return Ok(mapper.Map<WalletGetByIdDTO>(await walletService.GetWalletByUserIdAsync(id)));
         }
         catch (DbException db)
         {
-            _logger.LogError(db, $"Unexpected error in the database while getting wallet with ID: {id}\nERROR MESSAGE: {db.Message}\nINNER EXCEPTION MESSAGE: {db.InnerException.Message}");
-            return Problem($"An error occured in the database while getting a wallet by ID: {id}\nERROR MESSAGE: {db.Message}\nINNER EXCEPTION MESSAGE: {db.InnerException.Message}.", statusCode: 500);
+            logger.LogError(db, $"DatabaseException occured while getting wallet with UserID: {id}\nERROR MESSAGE: {db.Message}\nINNER EXCEPTION MESSAGE: {db.InnerException?.Message}");
+            return Problem($"An error occured in the database while getting a wallet by UserID: {id}\nERROR MESSAGE: {db.Message}\nINNER EXCEPTION MESSAGE: {db.InnerException?.Message}.", statusCode: 500);
+        }
+        catch (ArgumentOutOfRangeException aoorEx)
+        {
+            logger.LogError(aoorEx, $"ArgumentOutOfRangeException occured while getting wallet with UserID: {id}.\nERROR MESSAGE: {aoorEx.Message}\nINNER MESSAGE: {aoorEx.InnerException?.Message}");
+            return Problem($"An error occured while getting wallet with UserID: {id}.\nERROR MESSAGE: {aoorEx.Message}\nINNER MESSAGE: {aoorEx.InnerException?.Message}", statusCode: 400);
+
+        }
+        catch (KeyNotFoundException knfEx)
+        {
+            logger.LogError(knfEx, $"KeyNotFoundException occured while getting wallet with UserID: {id}.\nERROR MESSAGE: {knfEx.Message}\nINNER MESSAGE: {knfEx.InnerException?.Message}");
+            return Problem($"An error occured while getting wallet with UserID: {id}.\nERROR MESSAGE: {knfEx.Message}\nINNER MESSAGE: {knfEx.InnerException?.Message}", statusCode: 404);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, $"Unexpected error while getting wallet with ID: {id}\nERROR MESSAGE: {e.Message}\nINNER EXCEPTION MESSAGE: {e.InnerException.Message}");
-            return Problem($"An error occured while getting a wallet by ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER EXCEPTION MESSAGE: {e.InnerException.Message}", statusCode: 500);
+            logger.LogError(e, $"Unexpected error while getting wallet with UserID: {id}\nERROR MESSAGE: {e.Message}\nINNER EXCEPTION MESSAGE: {e.InnerException?.Message}");
+            return Problem($"An error occured while getting a wallet by UserID: {id}.\nERROR MESSAGE: {e.Message}\nINNER EXCEPTION MESSAGE: {e.InnerException?.Message}", statusCode: 500);
         }
     }
 
@@ -59,27 +61,35 @@ public class WalletController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> PutWallet([FromRoute] int id, [FromBody] WalletUpdateDTO wallet)
     {
-        // parameter checks
-        if (id <= 0) return BadRequest("ID must be positive integer.");
-        if (!ModelState.IsValid) return BadRequest(ModelState);
         try
         {
-            Wallet? existingWallet = await _unitOfWork.WalletRepository.GetByIdAsync(id);
-            if (existingWallet == null) { return NotFound(); }
-            _mapper.Map(wallet, existingWallet);
-            
+            await walletService.UpdateWalletBalanceAsync(id, wallet);
             return NoContent();
         }
         catch (DbUpdateException e)
         {
-            _logger.LogError(e, $"Unexpected error in the database while updating wallet by ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER EXCEPTION MESSAGE: {e.InnerException.Message}");
-            return Problem($"An error occured while updating the wallet with ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER EXCEPTION MESSAGE: {e.InnerException.Message}", statusCode: 500);
-            
+            logger.LogError(e,
+                $"DatabaseUpdateException occured while updating wallet balance by UserID: {id}.\nERROR MESSAGE: {e.Message}\nINNER EXCEPTION MESSAGE: {e.InnerException?.Message}");
+            return Problem(
+                $"An error occured while updating the wallet balance with UserID: {id}.\nERROR MESSAGE: {e.Message}\nINNER EXCEPTION MESSAGE: {e.InnerException?.Message}",
+                statusCode: 500);
+
+        }
+        catch (ArgumentOutOfRangeException aoorEx)
+        {
+            logger.LogError(aoorEx, $"ArgumentOutOfRangeException occured while updating wallet balance with UserID: {id}.\nERROR MESSAGE: {aoorEx.Message}\nINNER MESSAGE: {aoorEx.InnerException?.Message}");
+            return Problem($"An error occured while updating wallet balance with UserID: {id}.\nERROR MESSAGE: {aoorEx.Message}\nINNER MESSAGE: {aoorEx.InnerException?.Message}", statusCode: 400);
+
+        }
+        catch (KeyNotFoundException knfEx)
+        {
+            logger.LogError(knfEx, $"KeyNotFoundException occured while updating wallet balance with UserID: {id}.\nERROR MESSAGE: {knfEx.Message}\nINNER MESSAGE: {knfEx.InnerException?.Message}");
+            return Problem($"An error occured while updating user with ID: {id}.\nERROR MESSAGE: {knfEx.Message}\nINNER MESSAGE: {knfEx.InnerException?.Message}", statusCode: 404);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, $"Unexpected exception updating wallet with ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER EXCEPTION MESSAGE: {e.InnerException.Message}");
-            return Problem($"An error occured while updating the wallet with ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER EXCEPTION MESSAGE: {e.InnerException.Message}", statusCode: 500);
+            logger.LogError(e, $"Unexpected exception updating wallet balance with UserID: {id}.\nERROR MESSAGE: {e.Message}\nINNER EXCEPTION MESSAGE: {e.InnerException?.Message}");
+            return Problem($"An error occured while updating the wallet balance with UserID: {id}.\nERROR MESSAGE: {e.Message}\nINNER EXCEPTION MESSAGE: {e.InnerException?.Message}", statusCode: 500);
         }
     }
     
@@ -91,23 +101,33 @@ public class WalletController : Controller
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> DeleteWallet([FromRoute] int id)
     {
-        if (id <= 0) return BadRequest("ID must be a positive integer.");
         try
         {
-            await _unitOfWork.WalletRepository.DeleteByIdAsync(id);
-            await _unitOfWork.SaveAsync();
-            
+            await walletService.DeleteWalletAsync(id);
             return NoContent();
         }
         catch (DbUpdateException e)
         {
-            _logger.LogError(e, $"Database error deleting wallet with ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER EXCEPTION MESSAGE: {e.InnerException.Message}");
-            return Problem($"Failed to delete wallet with ID: {id}, due to database error.\nERROR MESSAGE: {e.Message}\nINNER EXCEPTION MESSAGE: {e.InnerException.Message}", statusCode: 500);
+            logger.LogError(e,
+                $"DatabaseUpdateException occured while deleting wallet with UserID: {id}.\nERROR MESSAGE: {e.Message}\nINNER EXCEPTION MESSAGE: {e.InnerException?.Message}");
+            return Problem(
+                $"Failed to delete wallet with UserID: {id}, due to database error.\nERROR MESSAGE: {e.Message}\nINNER EXCEPTION MESSAGE: {e.InnerException?.Message}",
+                statusCode: 500);
+        }
+        catch (ArgumentOutOfRangeException aoorEx)
+        {
+            logger.LogError(aoorEx, $"ArgumentOutOfRangeException occured while deleting wallet with UserID: {id}.\nERROR MESSAGE: {aoorEx.Message}\nINNER MESSAGE: {aoorEx.InnerException?.Message}");
+            return Problem($"An error occured while deleting user with ID: {id}.\nERROR MESSAGE: {aoorEx.Message}\nINNER MESSAGE: {aoorEx.InnerException?.Message}", statusCode: 400);
+        }
+        catch (KeyNotFoundException knfEx)
+        {
+            logger.LogError(knfEx, $"KeyNotFoundException occured while deleting wallet with UserID: {id}.\nERROR MESSAGE: {knfEx.Message}\nINNER MESSAGE: {knfEx.InnerException?.Message}");
+            return Problem($"An error occured while deleting user with ID: {id}.\nERROR MESSAGE: {knfEx.Message}\nINNER MESSAGE: {knfEx.InnerException?.Message}", statusCode: 404);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, $"Unexpected exception deleting wallet with ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER EXCEPTION MESSAGE: {e.InnerException.Message}");
-            return Problem($"Unexpected exception deleting wallet with ID: {id}.\nERROR MESSAGE: {e.Message}\nINNER EXCEPTION MESSAGE: {e.InnerException.Message}", statusCode:500);
+            logger.LogError(e, $"Unexpected exception deleting wallet with UserID: {id}.\nERROR MESSAGE: {e.Message}\nINNER EXCEPTION MESSAGE: {e.InnerException?.Message}");
+            return Problem($"Unexpected exception deleting wallet with UserID: {id}.\nERROR MESSAGE: {e.Message}\nINNER EXCEPTION MESSAGE: {e.InnerException?.Message}", statusCode:500);
         }
     }
 }

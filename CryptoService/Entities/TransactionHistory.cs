@@ -18,7 +18,7 @@ public class TransactionHistory
     
     
     [ForeignKey(nameof(Cryptocurrency))]
-    public int CryptoCurrencyId { get; set; }
+    public int CryptocurrencyId { get; set; }
     
     
     public Cryptocurrency Cryptocurrency { get; set; }

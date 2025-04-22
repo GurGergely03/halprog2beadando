@@ -8,11 +8,18 @@ public class WalletProfile : Profile
 {
     public WalletProfile()
     {
-        // TODO
         CreateMap<Wallet, WalletGetByIdDTO>()
-            .ForMember(dest => dest.Transactions, opt => opt.MapFrom(src => src.TransactionHistory.GroupBy(x => x.CryptoCurrencyId)));
-        
-        CreateMap<WalletUpdateDTO, Wallet>()
-            .ForMember(dest => dest.Balance, opt => opt.MapFrom(src => src.Balance));
+            .ForMember(dest => dest.Transactions, opt => opt.MapFrom(src => src.TransactionHistory
+                .GroupBy(x => x.CryptocurrencyId)
+                .Select(g => new WalletTransactionHistoryGetDTO
+                {
+                    Id = g.Key,
+                    CryptocurrencyAmount = g.Sum(t => t.CryptocurrencyAmount)
+                })
+                .ToList()
+            ))
+            .ForMember(dest => dest.Transactions, opt => opt.MapFrom(src => src.TransactionHistory));
+
+        CreateMap<WalletUpdateDTO, Wallet>();
     }
 }
