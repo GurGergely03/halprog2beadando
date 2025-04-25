@@ -4,37 +4,38 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace CryptoService;
 
-public class CryptoContext : DbContext
+public class CryptoContext(DbContextOptions options) : DbContext(options)
 {
-    public CryptoContext(DbContextOptions options) : base(options)
-    {
-    }
     public DbSet<User> Users { get; set; }
     public DbSet<Wallet> Wallets { get; set; }
     public DbSet<Cryptocurrency> Cryptocurrencies { get; set; }
     public DbSet<CryptocurrencyHistory> CryptocurrencyHistories { get; set; }
     public DbSet<TransactionHistory> TransactionHistories { get; set; }
-    
+    public DbSet<WalletCryptocurrency> WalletCryptocurrencies { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // User -> Wallet connection
+        /* USER ENTITY */
+        // User -> Wallet (One-to-One)
         modelBuilder.Entity<User>()
             .HasOne(u => u.Wallet)
             .WithOne(w => w.User)
             .HasForeignKey<User>(u => u.WalletId)
             .OnDelete(DeleteBehavior.Cascade);
         
-        // User's WalletId field
+        // User WalletId uniqueness
         modelBuilder.Entity<User>()
             .HasIndex(u => u.WalletId)
             .IsUnique();
         
+        // User CreatedAt Value assignment
         modelBuilder.Entity<User>()
             .Property(u => u.CreatedAt)
             .HasDefaultValueSql("GETUTCDATE()")
             .ValueGeneratedOnAdd();
         
+        
+        /* WALLET ENTITY */
         // Wallet -> TransactionHistory connection
         modelBuilder.Entity<Wallet>()
             .HasMany(w => w.TransactionHistory)
@@ -42,6 +43,8 @@ public class CryptoContext : DbContext
             .HasForeignKey(th => th.WalletId)
             .OnDelete(DeleteBehavior.NoAction);
         
+        
+        /* CRYPTOCURRENCY ENTITY */
         // Cryptocurrency -> CryptocurrencyHistory connection
         modelBuilder.Entity<Cryptocurrency>()
             .HasMany(cc => cc.CryptocurrencyHistory)
@@ -55,17 +58,28 @@ public class CryptoContext : DbContext
             .HasDefaultValueSql("GETUTCDATE()")
             .ValueGeneratedOnAdd();
         
+        
+        /* CRYPTOCURRENCY HISTORY ENTITY */
         // CryptocurrencyHistory -> Cryptocurrency connection
         modelBuilder.Entity<CryptocurrencyHistory>()
             .HasOne(cch => cch.Cryptocurrency)
             .WithMany(cc => cc.CryptocurrencyHistory)
             .OnDelete(DeleteBehavior.NoAction);
         
-        // TransactionHistory -> CryptocurrencyHistory connection
-        modelBuilder.Entity<TransactionHistory>()
-            .HasOne(th => th.CryptocurrencyHistory)
+        
+        /* WALLET CRYPTOCURRENCY ENTITY */
+        // WalletCryptocurrency -> Wallet (Many-to-One)
+        modelBuilder.Entity<WalletCryptocurrency>()
+            .HasOne(wcc => wcc.Wallet)
+            .WithMany(w => w.WalletCryptocurrencies)
+            .HasForeignKey(wcc => wcc.WalletId)
+            .OnDelete(DeleteBehavior.Cascade);
+        
+        // WalletCryptocurrency -> Cryptocurrency (Many-to-One)
+        modelBuilder.Entity<WalletCryptocurrency>()
+            .HasOne(wcc => wcc.Cryptocurrency)
             .WithMany()
-            .HasForeignKey(th => th.CryptocurrencyHistoryId)
-            .OnDelete(DeleteBehavior.NoAction);
+            .HasForeignKey(wcc => wcc.CryptocurrencyId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

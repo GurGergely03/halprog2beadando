@@ -23,5 +23,7 @@ public class Wallet
     public User User { get; set; }
     
     
+    public List<WalletCryptocurrency> WalletCryptocurrencies { get; set; } = new List<WalletCryptocurrency>();
+    
     public List<TransactionHistory> TransactionHistory { get; set; } = new List<TransactionHistory>();
 }

@@ -13,13 +13,8 @@ public class CryptocurrencyHistory
     
     
     [Column(TypeName = "decimal(14, 6)")]
-    [Range(0, 99999999.999999, ErrorMessage = "Price must be between 0 and 99,999,999.999999.")]
-    public decimal PriceBefore { get; set; }
-    
-    
-    [Column(TypeName = "decimal(14, 6)")]
     [Range(0, 99999999.999999)]
-    public decimal PriceAfter { get; set; }
+    public decimal PriceAt { get; set; }
     
     
     [Column(TypeName = "decimal(14, 6)")]
@@ -45,9 +40,4 @@ public class CryptocurrencyHistory
     [DataType(DataType.Date)]
     [Display(Name = "Change Timestamp")]
     public DateTime ChangeAt { get; set; } = DateTime.UtcNow;
-
-    
-    [NotMapped]
-    [Display(Name = "Price Change Direction")]
-    public string ChangeDirection => PriceChange >= 0 ? "Up" : "Down";
 }

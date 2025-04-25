@@ -3,6 +3,7 @@ using CryptoService.DTOs;
 using CryptoService.Entities;
 using CryptoService.Repositories;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
 
 namespace CryptoService.Services;
 
@@ -15,7 +16,7 @@ public interface IUserService
     Task DeleteUserAsync(int id);
 }
 
-public class UserService(UnitOfWork unitOfWork, IMapper mapper) : IUserService
+public class UserService(UnitOfWork unitOfWork, IMapper mapper, CryptoContext cryptoContext) : IUserService
 {
     public async Task<IEnumerable<UserGetDTO>> GetUsersAsync()
     {
@@ -25,7 +26,7 @@ public class UserService(UnitOfWork unitOfWork, IMapper mapper) : IUserService
     public async Task<UserGetByIdDTO> GetUserByIdAsync(int id)
     {
         if (id <= 0) throw new ArgumentOutOfRangeException();
-        var user = await unitOfWork.UserRepository.GetByIdAsync(id);
+        var user = await cryptoContext.Users.Include(u => u.Wallet).ThenInclude(w => w.TransactionHistory).ThenInclude(th => th.Cryptocurrency).FirstOrDefaultAsync(u => u.Id == id);
         if (user is null) throw new KeyNotFoundException();
         
         return mapper.Map<UserGetByIdDTO>(user);

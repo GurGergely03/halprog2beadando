@@ -9,23 +9,19 @@ public class CryptocurrencyHistoryProfile : Profile
 {
     public class CryptocurrencyHistorySources
     {
-        public Cryptocurrency Crypto { get; set; }
-        public CryptocurrencyUpdateDTO Update { get; set; }
+        public required Cryptocurrency Crypto { get; set; }
+        public required CryptocurrencyUpdateDTO Update { get; set; }
     }
     public CryptocurrencyHistoryProfile()
     {
-        // get by crypto id
-        CreateMap<CryptocurrencyHistory, CryptocurrencyHistoryGetByCryptoIdDTO>();
-        
         // create new history
         CreateMap<CryptocurrencyHistorySources, CryptocurrencyHistory>()
-            .ForMember(dest => dest.PriceBefore, opt => opt.MapFrom(src => src.Crypto.CurrentPrice))
-            .ForMember(dest => dest.PriceAfter, opt => opt.MapFrom(src => src.Update.CurrentPrice))
+            .ForMember(dest => dest.PriceAt, opt => opt.MapFrom(src => src.Update.CurrentPrice))
             .ForMember(dest => dest.CryptocurrencyId, opt => opt.MapFrom(src => src.Crypto.Id))
             .AfterMap((src, dest) =>
             {
-                dest.PriceChange = dest.PriceAfter - dest.PriceBefore;
-                dest.PriceChangePercent = (-100) + ((dest.PriceAfter / dest.PriceBefore) * 100);
+                dest.PriceChange = dest.PriceAt - src.Crypto.CurrentPrice;
+                dest.PriceChangePercent = (-100) + ((dest.PriceAt / src.Crypto.CurrentPrice) * 100);
                 dest.ChangeAt = DateTime.Now;
             });
     }
