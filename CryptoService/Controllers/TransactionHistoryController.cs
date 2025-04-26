@@ -111,7 +111,7 @@ public class TransactionHistoryController(
         }
     }
     
-    // Get By ID endpoint    
+    // Get transaction histories by userID endpoint    
     [HttpGet("transactions/{userId:int}")]
     [ProducesResponseType(typeof(List<TransactionHistoryGetByUserIdDTO>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -145,7 +145,7 @@ public class TransactionHistoryController(
         }
     }
     
-    // Get By ID endpoint    
+    // Get transaction history By transactionID endpoint    
     [HttpGet("transactions/details/{transactionId:int}")]
     [ProducesResponseType(typeof(TransactionHistoryGetByTransactionIdDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

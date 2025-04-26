@@ -49,3 +49,28 @@ public class UserTransactionHistoryDTO
     public decimal TransactionTotal { get; set; }
     public DateTime TransactionTime { get; set; }
 }
+
+public class UserGetProfitByIdDTO
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public decimal ProfitTotal { get; set; }
+}
+
+public class UserGetProfitDetailsByIdDTO
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public decimal ProfitTotal { get; set; }
+    public List<WalletCryptocurrencyProfitDTO> WalletCryptocurrencyProfitDTO { get; set; }
+}
+
+public class WalletCryptocurrencyProfitDTO
+{
+    public int Id { get; set; }
+    public int CryptocurrencyId { get; set; }
+    public string CryptocurrencyName { get; set; }
+    public string CryptocurrencyShortName { get; set; }
+    public decimal Amount { get; set; }
+    public decimal CryptocurrencyProfit { get; set; }
+}

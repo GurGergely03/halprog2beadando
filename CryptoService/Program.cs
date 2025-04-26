@@ -41,6 +41,11 @@ public class Program
         // dbcontext
         builder.Services.AddDbContext<CryptoContext>(options => options.UseSqlServer("Server=localhost;Database=CryptoService;User=sa;Password=Mikulas0;TrustServerCertificate=true;"));
         
+        // background service
+        builder.Services.AddHostedService<CryptocurrencyPriceChangeBackgroundService>();
+        
+        // logging
+        builder.Logging.AddConsole();
         
         var app = builder.Build();
 

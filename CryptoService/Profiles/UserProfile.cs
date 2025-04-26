@@ -23,5 +23,8 @@ public class UserProfile : Profile
             .ForMember(u => u.Name, opt => opt.PreCondition(dto => dto.Name != null))
             .ForMember(u => u.Password, opt => opt.PreCondition(dto => dto.Password != null))
             .ForMember(u => u.Email, opt => opt.PreCondition(dto => dto.Email != null));
+        
+        // profit by userId
+        CreateMap<User, UserGetProfitByIdDTO>();
     }
 }
