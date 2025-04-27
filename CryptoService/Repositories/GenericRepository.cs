@@ -63,9 +63,10 @@ public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEnt
         await _dbSet.AddAsync(entity);
     }
 
-    public void Update(TEntity entity)
+    public async Task UpdateAsync(TEntity entity)
     {
         _dbSet.Update(entity);
+        await Task.CompletedTask;
     }
 
     public async Task DeleteByIdAsync(int id)

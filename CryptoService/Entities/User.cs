@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
 namespace CryptoService.Entities;
-[Table("Users")]
+[Table("Users", Schema = "dbo")]
 [Index(nameof(Email), IsUnique = true, Name = "IX_Users_Email")]
 public sealed class User
 {
@@ -36,8 +36,6 @@ public sealed class User
     public int WalletId { get; set; }
     
     
-    [Required]
-    [InverseProperty(nameof(Wallet.User))]
     public Wallet Wallet { get; set; } = new Wallet();
     
     

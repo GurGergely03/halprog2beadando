@@ -13,6 +13,7 @@ public class CryptocurrencyProfile : Profile
         
         // get by id
         CreateMap<Cryptocurrency, CryptocurrencyGetByIdDTO>();
+        CreateMap<CryptocurrencyHistory, CryptocurrencyHistoryListDTO>();
         
         // create
         CreateMap<CryptocurrencyCreateDTO, Cryptocurrency>()
@@ -25,5 +26,12 @@ public class CryptocurrencyProfile : Profile
             .ForMember(cc => cc.ShortName, opt => opt.PreCondition(dto => dto.ShortName != null))
             .ForMember(cc => cc.CurrentPrice, opt => opt.PreCondition(dto => dto.CurrentPrice != null))
             .ForMember(cc => cc.TotalAmount, opt => opt.PreCondition(dto => dto.TotalAmount != null));
+        
+        // purchase
+        CreateMap<CryptocurrencyBuyDTO, Cryptocurrency>();
+        
+        // crypto to update
+        CreateMap<Cryptocurrency, CryptocurrencyUpdateDTO>();
+        CreateMap<CryptocurrencyGetDTO, CryptocurrencyUpdateDTO>();
     }
 }

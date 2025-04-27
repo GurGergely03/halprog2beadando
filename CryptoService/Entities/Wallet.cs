@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CryptoService.Entities;
 
+[Table("Wallets", Schema = "dbo")]
 public class Wallet
 {
     [Key]
@@ -21,6 +22,8 @@ public class Wallet
     
     public User User { get; set; }
     
+    
+    public List<WalletCryptocurrency> WalletCryptocurrencies { get; set; } = new List<WalletCryptocurrency>();
     
     public List<TransactionHistory> TransactionHistory { get; set; } = new List<TransactionHistory>();
 }
