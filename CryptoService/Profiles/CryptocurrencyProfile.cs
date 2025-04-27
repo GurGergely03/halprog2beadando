@@ -32,5 +32,6 @@ public class CryptocurrencyProfile : Profile
         
         // crypto to update
         CreateMap<Cryptocurrency, CryptocurrencyUpdateDTO>();
+        CreateMap<CryptocurrencyGetDTO, CryptocurrencyUpdateDTO>();
     }
 }

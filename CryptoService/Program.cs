@@ -1,6 +1,7 @@
 using System.Reflection;
 using CryptoService.DTOs;
 using CryptoService.Entities;
+using CryptoService.Profiles;
 using CryptoService.Repositories;
 using CryptoService.Services;
 using Microsoft.EntityFrameworkCore;
@@ -28,21 +29,25 @@ public class Program
         
         // unit of work
         builder.Services.AddScoped<UnitOfWork>();
-
+        
+        
         // services
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<IWalletService, WalletService>();
         builder.Services.AddScoped<ICryptocurrencyService, CryptocurrencyService>();
         builder.Services.AddScoped<ITransactionHistoryService, TransactionHistoryService>();
         
+        // background service
+        builder.Services.AddHostedService<CryptocurrencyPriceChangeBackgroundService>();
+        
+        // other dependencies
+        builder.Services.AddScoped<CryptoContext>();
+        
         // automapper
         builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
         
         // dbcontext
         builder.Services.AddDbContext<CryptoContext>(options => options.UseSqlServer("Server=localhost;Database=CryptoService;User=sa;Password=Mikulas0;TrustServerCertificate=true;"));
-        
-        // background service
-        builder.Services.AddHostedService<CryptocurrencyPriceChangeBackgroundService>();
         
         // logging
         builder.Logging.AddConsole();

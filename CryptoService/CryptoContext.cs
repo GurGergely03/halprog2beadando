@@ -28,12 +28,6 @@ public class CryptoContext(DbContextOptions options) : DbContext(options)
             .HasIndex(u => u.WalletId)
             .IsUnique();
         
-        // User CreatedAt Value assignment
-        modelBuilder.Entity<User>()
-            .Property(u => u.CreatedAt)
-            .HasDefaultValueSql("GETUTCDATE()")
-            .ValueGeneratedOnAdd();
-        
         
         /* WALLET ENTITY */
         // Wallet -> TransactionHistory connection
@@ -51,12 +45,6 @@ public class CryptoContext(DbContextOptions options) : DbContext(options)
             .WithOne(cch => cch.Cryptocurrency)
             .HasForeignKey(cch => cch.CryptocurrencyId)
             .OnDelete(DeleteBehavior.NoAction);
-
-        // Cryptocurrency CreatedAt field value generation
-        modelBuilder.Entity<Cryptocurrency>()
-            .Property(cc => cc.CreatedAt)
-            .HasDefaultValueSql("GETUTCDATE()")
-            .ValueGeneratedOnAdd();
         
         
         /* CRYPTOCURRENCY HISTORY ENTITY */

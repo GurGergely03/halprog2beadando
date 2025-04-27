@@ -37,7 +37,7 @@ public class CryptocurrencyUpdateDTO
 { 
     public string? Name { get; set; }
     public string? ShortName { get; set; }
-    public decimal? CurrentPrice { get; set; }
+    public decimal CurrentPrice { get; set; }
     public decimal? TotalAmount { get; set; }
 }
 

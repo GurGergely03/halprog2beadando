@@ -36,11 +36,14 @@ public class CryptocurrencyService(UnitOfWork unitOfWork, IMapper mapper, Crypto
     public async Task AddCryptoAsync(CryptocurrencyCreateDTO cryptocurrency)
     {
         var crypto = mapper.Map<Cryptocurrency>(cryptocurrency);
+        crypto.CreatedAt = DateTime.UtcNow;
+        
         await unitOfWork.CryptocurrencyRepository.InsertAsync(crypto);
         await unitOfWork.SaveAsync();
         
         var sources = new CryptocurrencyHistoryProfile.CryptocurrencyHistorySources
             { Crypto = crypto, Update = mapper.Map<CryptocurrencyUpdateDTO>(crypto) };
+        
         await unitOfWork.CryptocurrencyHistoryRepository.InsertAsync(mapper.Map<CryptocurrencyHistory>(sources));
         
         await unitOfWork.SaveAsync();

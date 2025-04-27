@@ -34,8 +34,11 @@ public class UserService(UnitOfWork unitOfWork, IMapper mapper, CryptoContext cr
         return mapper.Map<UserGetByIdDTO>(user);
     }
 
-    public async Task AddUserAsync(UserCreateDTO user)
-    { 
+    public async Task AddUserAsync(UserCreateDTO dto)
+    {
+        var user = mapper.Map<User>(dto);
+        user.CreatedAt = DateTime.UtcNow;
+        
         await unitOfWork.UserRepository.InsertAsync(mapper.Map<User>(user));
         await unitOfWork.SaveAsync();
     }
