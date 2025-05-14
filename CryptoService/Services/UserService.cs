@@ -22,7 +22,7 @@ public class UserService(UnitOfWork unitOfWork, IMapper mapper, CryptoContext cr
 {
     public async Task<IEnumerable<UserGetDTO>> GetUsersAsync()
     {
-        return mapper.Map<List<UserGetDTO>>(await unitOfWork.UserRepository.GetAllAsync());
+        return mapper.Map<List<UserGetDTO>>(await unitOfWork.UserRepository.GetAllAsync(includedProperties: ["Wallet"]));
     }
 
     public async Task<UserGetByIdDTO> GetUserByIdAsync(int id)

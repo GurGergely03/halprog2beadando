@@ -45,7 +45,7 @@ public class UserTransactionHistoryDTO
     public int Id { get; set; }
     public string CryptocurrencyName { get; set; }
     public decimal CryptocurrencyPriceAtPurchase { get; set; }
-    public decimal CryptocurrencyAmount { get; set; } // amount will indicate whether it was a sell or a buy
+    public decimal CryptocurrencyAmount { get; set; } 
     public decimal TransactionTotal { get; set; }
     public DateTime TransactionTime { get; set; }
 }

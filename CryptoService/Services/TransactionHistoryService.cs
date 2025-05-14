@@ -53,6 +53,8 @@ public class TransactionHistoryService(UnitOfWork unitOfWork, IMapper mapper, Cr
         dto.CryptocurrencyPriceAtPurchase = currentCrypto.CurrentPrice;
         
         var transaction = mapper.Map<TransactionHistory>(dto);
+        transaction.TransactionTime = DateTime.Now;
+        
         await unitOfWork.TransactionHistoryRepository.InsertAsync(transaction);
         
         await unitOfWork.SaveAsync();
@@ -93,7 +95,7 @@ public class TransactionHistoryService(UnitOfWork unitOfWork, IMapper mapper, Cr
     {
         if (userId <= 0) throw new ArgumentOutOfRangeException();
         
-        var transactions = mapper.Map<List<TransactionHistoryGetByUserIdDTO>>(await cryptoContext.TransactionHistories.Where(th => th.WalletId == userId).ToListAsync());
+        var transactions = mapper.Map<List<TransactionHistoryGetByUserIdDTO>>(await cryptoContext.TransactionHistories.Include(th => th.Cryptocurrency).Where(th => th.WalletId == userId).ToListAsync());
         return transactions;
     }
 
@@ -101,6 +103,6 @@ public class TransactionHistoryService(UnitOfWork unitOfWork, IMapper mapper, Cr
     {
         if (transactionId <= 0) throw new ArgumentOutOfRangeException();
         
-        return mapper.Map<TransactionHistoryGetByTransactionIdDTO>(await unitOfWork.TransactionHistoryRepository.GetByIdAsync(transactionId));
+        return mapper.Map<TransactionHistoryGetByTransactionIdDTO>(await cryptoContext.TransactionHistories.Include(th => th.Cryptocurrency).Where(th => th.Id == transactionId).FirstOrDefaultAsync());
     }
 }
